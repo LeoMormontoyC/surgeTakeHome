@@ -2,7 +2,6 @@
 export const dynamic = 'force-dynamic';
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { v4 as uuid } from "uuid";
 
 async function openverseImage(query: string): Promise<string | null> {
     const imageLink = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&page_size=1`;
@@ -25,21 +24,31 @@ export default function AddHighlightPage() {
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setSubmit(true);
-        setError("");
 
         const form = new FormData(event.currentTarget);
-        const name = form.get("name") as string;
+        const title = form.get("title") as string;
         const location = form.get("location") as string;
         const description = form.get("description") as string;
 
         try {
-            const img = await openverseImage(name);
+            const img = await openverseImage(title);
             if (!img) throw new Error('Could not find an image for that name.');
 
-            const newHighlight = { uniqueId: uuid(), name, location, description, imageLink: img };
-            const saved = JSON.parse(localStorage.getItem('highlights') || '[]');
-            localStorage.setItem('highlights', JSON.stringify([...saved, newHighlight]));
-
+            const saved = await fetch(
+                "https://surgetakehome.vercel.app/api/postreview/kestrel",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        title,
+                        location,
+                        description,
+                    }),
+                }
+            );
+            if (!saved.ok) throw new Error('Failed to submit review');
             router.push("/");
         }
         catch {
@@ -58,9 +67,9 @@ export default function AddHighlightPage() {
                 <h1 className="text-xl font-bold text-left">Add a highlight</h1>
 
                 <label className="block">
-                    <span className="text-sm font-medium">Name</span>
+                    <span className="text-sm font-medium">title</span>
                     <input
-                        name="name"
+                        title="name"
                         required
                         className="mt-1 w-full rounded border p-2"
                         placeholder="e.g. Stanley Park"
@@ -70,7 +79,7 @@ export default function AddHighlightPage() {
                 <label className="block">
                     <span className="text-sm font-medium">Location</span>
                     <input
-                        name="location"
+                        title="location"
                         required
                         className="mt-1 w-full rounded border p-2"
                         placeholder="e.g. Vancouver, BC"
@@ -80,7 +89,7 @@ export default function AddHighlightPage() {
                 <label className="block">
                     <span className="text-sm font-medium">Description</span>
                     <textarea
-                        name="description"
+                        title="description"
                         rows={4}
                         required
                         className="mt-1 w-full rounded border p-2"
