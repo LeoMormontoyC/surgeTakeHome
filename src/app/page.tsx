@@ -45,13 +45,13 @@ export default function Home() {
 
         const highlightImages: Highlight[] = await Promise.all(
           info.map(async (highlight) => {
-            const tempLink = await openverseImage(highlight.title);
+            const img = await openverseImage(highlight.title);
             return {
               uniqueId: uuid(),
               title: highlight.title,
               location: highlight.location,
               description: highlight.description,
-              imageLink: tempLink ?? "",
+              imageLink: img ?? "",
             };
           })
         );
