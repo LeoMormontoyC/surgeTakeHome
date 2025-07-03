@@ -21,7 +21,6 @@ type Highlight = {
 
 async function openverseImage(query: string): Promise<string | null> {
   const imageLink = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&page_size=1`;
-  const [error, setError] = useState('');
   const image = await fetch(imageLink);
   if (!image.ok)
     return null;
