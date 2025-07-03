@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const getLink = `https://surgetakehome.vercel.app/api/getreviews/kestrel`
 
