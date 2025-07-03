@@ -21,6 +21,7 @@ type Highlight = {
 
 async function openverseImage(query: string): Promise<string | null> {
   const imageLink = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&page_size=1`;
+  const [error, setError] = useState('');
   const image = await fetch(imageLink);
   if (!image.ok)
     return null;
@@ -36,7 +37,21 @@ async function openverseImage(query: string): Promise<string | null> {
   if (!json.results?.length)
     return null;
 
-  return json.results[0].thumbnail || json.results[0].url || null;
+  const link = json.results[0].thumbnail || json.results[0].url || null;
+
+  if (link) {
+    try {
+      const head = await fetch(link, { method: "HEAD" });
+      if (!head.ok)
+        return null;
+      const isImg = head.headers.get("content-type") || "";
+      if (!isImg.startsWith("image/"))
+        return null;
+    } catch {
+      return null; //just ignore
+    }
+  }
+  return link;
 }
 
 export default function Home() {
@@ -66,12 +81,11 @@ export default function Home() {
             };
           })
         );
-        setHighlights(highlightImages);
+        setHighlights((highlightImages).reverse());
       }
       catch {
         setError('Error getting Highlight from API try with a different title');
       }
-
       finally {
         setLoading(false);
       }
