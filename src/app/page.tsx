@@ -3,9 +3,9 @@ export const dynamic = 'force-dynamic';
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
-import { v4 as uuid } from "uuid";
 
 type apiHighlight = {
+  id: string
   title: string;
   location: string;
   description: string;
@@ -16,7 +16,7 @@ type Highlight = {
   title: string;
   location: string;
   description: string;
-  imageLink: string;
+  imageLink: string | null;
 };
 
 async function openverseImage(query: string): Promise<string | null> {
@@ -24,7 +24,15 @@ async function openverseImage(query: string): Promise<string | null> {
   const image = await fetch(imageLink);
   if (!image.ok)
     return null;
-  const json = await image.json() as { results: { thumbnail?: string; url?: string }[] };
+
+  const json = await image.json() as {
+    results: {
+      thumbnail?: string;
+      url?: string
+    }[]
+  };
+
+
   if (!json.results?.length)
     return null;
 
@@ -40,18 +48,21 @@ export default function Home() {
   useEffect(() => {
     async function load() {
       try {
-        const getReviews = await fetch("https://surgetakehome.vercel.app/api/getreviews/kestrel");
+        const getReviews = await fetch(`/api/getreviews`, { cache: "no-store" });
         const info: apiHighlight[] = await getReviews.json();
+
+
 
         const highlightImages: Highlight[] = await Promise.all(
           info.map(async (highlight) => {
             const img = await openverseImage(highlight.title);
+
             return {
-              uniqueId: uuid(),
+              uniqueId: highlight.id,
               title: highlight.title,
               location: highlight.location,
               description: highlight.description,
-              imageLink: img ?? "",
+              imageLink: img ?? null,
             };
           })
         );
@@ -73,8 +84,8 @@ export default function Home() {
       <div className=" px-[5%] pt-[3%] align-top">
         <h1 className=" pl-3  pt-3 text-xs text-orange-500 font-bold">HIGHLIGHTS</h1>
 
-        <section className="w-fit flex-none max-w-[68ch] p-3">
-          <h2 className="text-3xl text-black text-pretty">
+        <section className="w-fit flex-none max-w-[71ch] p-3">
+          <h2 className="text-[28px] text-black text-pretty font-bold pb-2">
             What are the special moments of your life?
           </h2>
           <p className="text-gray-800 hyphens-auto text-base">
@@ -93,17 +104,19 @@ export default function Home() {
         {!loading && !error && (
           <div className=" flex justify-center">
             <div className=" columns-1 min-[755px]:columns-2 xl:columns-3 gap-4 p-4">
-              {highlights.map(highlight =>
-                <div key={highlight.uniqueId} className=" flex flex-col overflow-hidden bg-gray-100 rounded-2xl min-h-[170px] mb-4">
-                  <div className="relative h-[160px] w-full overflow-hidden m-1 mt-4 flex justify-center ">
+
+              {highlights.filter(highlight => highlight.imageLink).map(highlight =>
+                <div key={highlight.uniqueId} className=" flex flex-col overflow-hidden bg-white rounded-2xl min-h-[170px] mb-4 p-3">
+                  <div className="relative aspect-video overflow-hidden flex justify-center ">
                     <Image
-                      src={highlight.imageLink}
-                      height={160} width={320}
+                      src={highlight.imageLink as string}
+                      sizes="(max-width: 768px) 100vw,(max-width: 1280px) 50vw, 33vw"
+                      fill
                       alt={highlight.title}
                       className="object-cover rounded-2xl"
                     />
                   </div>
-                  <div className="p-4 break-words">
+                  <div className=" pt-3 break-words">
                     <h3 className="font-semibold">{highlight.title}</h3>
                     <p className="text-sm text-gray-600">{highlight.location}</p>
                     <p className="text-sm">{highlight.description}</p>
@@ -114,7 +127,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        <button className="fixed right-4 z-50 bg-red-500 rounded-xl p-3 hover:bg-red-400"
+        <button className="fixed bottom-4 right-4 z-50 bg-red-500 rounded-xl p-3 hover:bg-red-400 text-white"
           onClick={() => router.push('/addhighlight')}>
           Create +
         </button>
