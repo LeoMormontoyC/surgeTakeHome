@@ -86,7 +86,7 @@ export default function AddHighlightPage() {
                 <label className="block">
                     <span className="text-sm font-medium">Highlight Name</span>
                     <input
-                        title="title"
+                        name="title"
                         required
                         className="mt-1 w-full rounded border p-2 border-gray-300"
                     />
@@ -95,7 +95,7 @@ export default function AddHighlightPage() {
                 <label className="block">
                     <span className="text-sm font-medium">Location</span>
                     <input
-                        title="location"
+                        name="location"
                         required
                         className="mt-1 w-full rounded border p-2 border-gray-300"
                     />
@@ -104,7 +104,7 @@ export default function AddHighlightPage() {
                 <label className="block">
                     <span className="text-sm font-medium">Description</span>
                     <textarea
-                        title="description"
+                        name="description"
                         rows={4}
                         required
                         className="mt-1 w-full rounded border p-2 border-gray-300"

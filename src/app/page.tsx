@@ -3,9 +3,9 @@ export const dynamic = 'force-dynamic';
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
+import { v4 as uuid } from "uuid";
 
 type apiHighlight = {
-  id: string
   title: string;
   location: string;
   description: string;
@@ -58,7 +58,7 @@ export default function Home() {
             const img = await openverseImage(highlight.title);
 
             return {
-              uniqueId: highlight.id,
+              uniqueId: uuid(),
               title: highlight.title,
               location: highlight.location,
               description: highlight.description,
@@ -69,7 +69,7 @@ export default function Home() {
         setHighlights(highlightImages);
       }
       catch {
-        setError('Error getting Highlight from API');
+        setError('Error getting Highlight from API try with a different title');
       }
 
       finally {
